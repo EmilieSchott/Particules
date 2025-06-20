@@ -6,6 +6,8 @@ struct Particle {
     float radius = .01f; 
     glm::vec4 color = glm::vec4(.2f, .2f, 1.f, 1.f);
     glm::vec2 speedVector = determineVectorFromPolarCoordinates();
+    float mass = 2.0f;
+    
 
     glm::vec2 determineVectorFromPolarCoordinates() {
         float angle = utils::rand(0.f, 360.f);
@@ -18,6 +20,10 @@ struct Particle {
         position.x += speedVector.x * deltaTime;
         position.y += speedVector.y * deltaTime;
     };
+    
+    void addGravity() {
+        glm::vec2 gravity = glm::vec2(0.f, -9.8f) * mass;
+    }
 };
 
 int main()
