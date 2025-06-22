@@ -2,6 +2,18 @@
     "files.associations": {
         "vector": "cpp",
         "array": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "chrono": "cpp",
+        "filesystem": "cpp",
+        "format": "cpp",
+        "forward_list": "cpp",
+        "initializer_list": "cpp",
+        "list": "cpp",
+        "span": "cpp",
+        "xhash": "cpp",
+        "xiosbase": "cpp",
+        "xstring": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
     }
 }

@@ -64,6 +64,36 @@ struct Particle {
     }
 };
 
+struct Vector2D {
+	Vector2D(glm::vec2 vector_origin, glm::vec2 vector_direction, float vector_magnitude)
+	{
+		origin = vector_origin;
+		direction = vector_direction;
+		magnitude = vector_magnitude;
+	};
+
+	glm::vec2 origin;
+	glm::vec2 direction;
+	float magnitude;
+};
+
+ glm::vec2 defineLinesIntersection(Vector2D vector_1, Vector2D vector_2) {
+    
+    glm::mat2 matrix = glm::mat2(vector_1.direction, -vector_2.direction);
+	glm::mat2 inversed_matrix = glm::inverse(matrix);
+
+    glm::vec2 origin_vector = glm::vec2(vector_2.origin - vector_1.origin);
+
+    glm::vec2 intersection_vector =  inversed_matrix * origin_vector;
+
+	if(intersection_vector.x < 0.0f || intersection_vector.x > 1.0f || intersection_vector.y < 0.0f || intersection_vector.y > vector_2.magnitude) {
+		return glm::vec2(200.0f, 200.0f);
+	}
+
+	return vector_1.origin + intersection_vector.x * vector_1.direction;
+
+}
+
 int main()
 {
     gl::init("Particules!");
@@ -101,5 +131,24 @@ int main()
 
         for (auto const& particle : particles)
             utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
+
+		
+        glm::vec2 startVector1{-0.5f, 0.5f};
+        glm::vec2 endVector1{0.5f, 0.5f};
+		Vector2D vector_1(startVector1, glm::normalize(endVector1-startVector1), glm::length(endVector1-startVector1));
+
+        glm::vec2 startVector2{-0.5f, -0.5f};
+		glm::vec2 endVector2 = gl::mouse_position();
+		Vector2D vector_2(startVector2, glm::normalize(endVector2-startVector2), glm::length(endVector2-startVector2));
+
+        float thickness = 0.005;
+        glm::vec4 color{1.f, 1.f, 1.f, 1.f};
+        
+        // draw 2 lines with one define by mouse position : 
+        utils::draw_line(startVector1, endVector1,  thickness, color);
+        utils::draw_line(startVector2, endVector2, thickness, color);
+
+		glm::vec2 intersection_position = defineLinesIntersection(vector_1, vector_2);
+        utils::draw_disk(intersection_position, 0.025f, color);
     }
 }
