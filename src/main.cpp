@@ -101,7 +101,29 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    std::vector<Particle> particles(100);
+    std::vector<Particle> particles(50);
+
+	glm::vec2 startVector1{-0.8f, 0.8f};
+    glm::vec2 endVector1{0.8f, 0.8f};
+	Vector2D vector_1(startVector1, glm::normalize(endVector1-startVector1), glm::length(endVector1-startVector1));
+
+	glm::vec2 startVector2{-0.8f, -0.8f};
+	glm::vec2 endVector2{0.8f, -0.8f};
+	Vector2D vector_2(startVector2, glm::normalize(endVector2-startVector2), glm::length(endVector2-startVector2));
+
+	glm::vec2 startVector3{-0.8f, 0.8f};
+	glm::vec2 endVector3{-0.8f, -0.8f};
+	Vector2D vector_3(startVector3, glm::normalize(endVector3-startVector3), glm::length(endVector3-startVector3));
+
+	glm::vec2 startVector4{0.8f, 0.8f};
+	glm::vec2 endVector4{0.8f, -0.8f};
+	Vector2D vector_4(startVector4, glm::normalize(endVector4-startVector4), glm::length(endVector4-startVector4));
+
+	std::vector<Vector2D> Lines;
+	Lines.push_back(vector_1);
+	Lines.push_back(vector_2);
+	Lines.push_back(vector_3);
+	Lines.push_back(vector_4);
 
     while (gl::window_is_open())
     {
@@ -110,7 +132,7 @@ int main()
 
         for (auto& particle : particles)
         {
-            particle.age += gl::delta_time_in_seconds();
+            // particle.age += gl::delta_time_in_seconds();
 
             auto forces = glm::vec2{0.f};
 
@@ -118,13 +140,28 @@ int main()
             // forces += glm::vec2{0.f, -1.f} * particle.mass;
 
             // Air friction
-            forces += -particle.velocity * 1.f;
+            // forces += -particle.velocity * 1.f;
 
             // Follow mouse
             // forces += (gl::mouse_position() - particle.position);
 
             particle.velocity += forces / particle.mass * gl::delta_time_in_seconds();
             particle.position += particle.velocity * gl::delta_time_in_seconds();
+			Vector2D particle_vector(particle.position, glm::normalize(particle.velocity), glm::length(particle.velocity));
+
+			for (auto& line : Lines) {
+				glm::vec2 intersection_position = defineLinesIntersection(line, particle_vector);
+				if(intersection_position != glm::vec2(200.0f, 200.0f)) {
+                    glm::vec2 line_normal = glm::vec2(-line.direction.y, line.direction.x);
+
+					if (glm::dot(line_normal, particle.velocity) > 0.f) 
+					{
+						line_normal = -line_normal;
+					}
+
+					particle.velocity = glm::reflect(particle.velocity, line_normal);
+				}
+			}
         }
 
         std::erase_if(particles, [&](Particle const& particle) { return particle.age > particle.lifespan; });
@@ -133,22 +170,22 @@ int main()
             utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
 
 		
-        glm::vec2 startVector1{-0.5f, 0.5f};
-        glm::vec2 endVector1{0.5f, 0.5f};
-		Vector2D vector_1(startVector1, glm::normalize(endVector1-startVector1), glm::length(endVector1-startVector1));
 
-        glm::vec2 startVector2{-0.5f, -0.5f};
-		glm::vec2 endVector2 = gl::mouse_position();
-		Vector2D vector_2(startVector2, glm::normalize(endVector2-startVector2), glm::length(endVector2-startVector2));
 
         float thickness = 0.005;
         glm::vec4 color{1.f, 1.f, 1.f, 1.f};
         
         // draw 2 lines with one define by mouse position : 
-        utils::draw_line(startVector1, endVector1,  thickness, color);
-        utils::draw_line(startVector2, endVector2, thickness, color);
+        // utils::draw_line(startVector1, endVector1,  thickness, color);
+        // utils::draw_line(startVector2, endVector2, thickness, color);
+		// utils::draw_line(startVector3, endVector3, thickness, color);
+		// utils::draw_line(startVector4, endVector4, thickness, color);
 
-		glm::vec2 intersection_position = defineLinesIntersection(vector_1, vector_2);
-        utils::draw_disk(intersection_position, 0.025f, color);
+		for (auto& line : Lines) {
+			utils::draw_line(line.origin, line.origin+line.direction*line.magnitude,  thickness, color);
+		}
+
+		// glm::vec2 intersection_position = defineLinesIntersection(vector_1, vector_2);
+        // utils::draw_disk(intersection_position, 0.025f, color);
     }
 }
