@@ -18,8 +18,6 @@ struct Particle {
 
 
     glm::vec2 position{
-        // utils::rand(-gl::window_aspect_ratio(), +gl::window_aspect_ratio()),
-        // utils::rand(-1.f, +1.f),
     };
 
     glm::vec2 velocity;
@@ -55,10 +53,11 @@ struct Particle {
         return age / lifespan;
     }
 
-    Particle(float rectangle_with, float rectangle_height)
+    Particle(float rectangle_with, float rectangle_height, float offset)
     {
         float x = utils::rand(-rectangle_with/2, +rectangle_with/2);
         float y = utils::rand(-rectangle_height/2, +rectangle_height/2);
+        x += y*offset;
 
         position = glm::vec2{x, y};
     }
@@ -102,9 +101,9 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     std::vector<Particle> particles{};
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 300; i++)
     {
-        Particle particle = Particle(0.5f, 1.0f);
+        Particle particle = Particle(1.5f, 1.0f, 1.0f);
         particles.push_back(particle);
     }
 
