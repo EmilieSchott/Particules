@@ -45,7 +45,7 @@ struct Particle {
 
     float radius() const
     {
-        return std::min(lifespan - age, 2.f) / 2.f * 0.03f;
+        return 0.01f;
     }
 
     float relative_age() const
@@ -53,11 +53,15 @@ struct Particle {
         return age / lifespan;
     }
 
-    Particle(float rectangle_with, float rectangle_height, float offset)
+    Particle(float square_with)
     {
-        float x = utils::rand(-rectangle_with/2, +rectangle_with/2);
-        float y = utils::rand(-rectangle_height/2, +rectangle_height/2);
-        x += y*offset;
+        float x = square_with + 10 ;
+        float y = square_with + 10;
+
+        while(std::hypot(x, y) > square_with/2) {
+            x = utils::rand(-square_with/2, +square_with/2);
+            y = utils::rand(-square_with/2, +square_with/2);
+        }
 
         position = glm::vec2{x, y};
     }
@@ -101,9 +105,9 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     std::vector<Particle> particles{};
-    for (int i = 0; i < 300; i++)
+    for (int i = 0; i < 1500; i++)
     {
-        Particle particle = Particle(1.5f, 1.0f, 1.0f);
+        Particle particle = Particle(0.5f);
         particles.push_back(particle);
     }
 
