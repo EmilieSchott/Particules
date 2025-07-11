@@ -1,6 +1,7 @@
 #include "glm/ext/scalar_constants.hpp"
 #include "opengl-framework/opengl-framework.hpp"
 #include "utils.hpp"
+#include <numbers>
 
 float easeInOut(float x, float power)
 {
@@ -53,17 +54,14 @@ struct Particle {
         return age / lifespan;
     }
 
-    Particle(float square_with)
+    Particle(float radius)
     {
-        float x = square_with + 10 ;
-        float y = square_with + 10;
+        float uniform = utils::rand(0, radius);
+        float newPositionRadius = std::sqrt(uniform / std::numbers::pi);
 
-        while(std::hypot(x, y) > square_with/2) {
-            x = utils::rand(-square_with/2, +square_with/2);
-            y = utils::rand(-square_with/2, +square_with/2);
-        }
+        float angle = utils::rand(0.f, 360.f);
 
-        position = glm::vec2{x, y};
+       position = glm::vec2(glm::cos(angle)*newPositionRadius, glm::sin(angle)*newPositionRadius);
     }
 };
 
