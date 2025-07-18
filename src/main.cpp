@@ -249,14 +249,25 @@ void draw_parametric(std::function<glm::vec2(float)> const& parametric)
 {
     int steps = 100;
     glm::vec2 start = parametric(0.f);
-    
+
+                glm::vec4 violet = {1.f, 0.f, 1.f, 1.f}; // RGB(255, 0, 255)
+            utils::draw_disk(start, 0.01f, violet); // point de départ
+
+
     for (int i = 1; i <= steps; ++i)
     {
         float t = static_cast<float>(i) / steps;
         glm::vec2 end = parametric(t);
         utils::draw_line(start, end, 0.01f, glm::vec4{1.f, 1.f, 1.f, 1.f});
         start = end;
+
+        if(i == steps) utils::draw_disk(end, 0.01f, violet); // point de d'arrivée
     }
+}
+
+glm::vec2 bezier1(glm::vec2 p0, glm::vec2 p1, float t)
+{
+    return glm::mix(p0, p1, t);
 }
 
 int main()
@@ -302,14 +313,9 @@ int main()
         //     utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
 
         draw_parametric([](float t) {
-            float angle = t * glm::pi<float>() * 2.f; 
-            float x = 16.f * std::pow(std::sin(angle), 3.f);
-            float y = 13.f * std::cos(angle)
-                - 5.f * std::cos(2.f * angle)
-                - 2.f * std::cos(3.f * angle)
-                - std::cos(4.f * angle);
-            
-            return 0.05f * glm::vec2{x, y}; // 0.05f mise à l’échelle pour rester dans [-1,1]
+            glm::vec2 p0 = {-.3f, -.3f};
+            glm::vec2 p1 = {0.3f, 0.3f};
+            return bezier1(p0, p1, t);
         });
     }
 }
