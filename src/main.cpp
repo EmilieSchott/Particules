@@ -214,7 +214,7 @@ struct Particle {
         return age / lifespan;
     }
 
-    Particle(glm::vec2 bezierPosition)
+    Particle(glm::vec2 bezierPosition, glm::vec2 bezierNormal)
     {
         // Rectangle
         // position.x = utils::rand(0.3, 0.8);
@@ -246,6 +246,7 @@ struct Particle {
 
         // Bézier :
         position = bezierPosition;
+        velocity = 0.3f * bezierNormal;
     }
 };
 
@@ -274,6 +275,15 @@ glm::vec2 bezier3(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, float 
         + t*t*t * p3;
 }
 
+glm::vec2 bezier3_derivative(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, float t)
+{
+    float u = 1.f - t;
+    return 
+        3.f * u*u * (p1 - p0) +
+        6.f * u * t * (p2 - p1) +
+        3.f * t*t * (p3 - p2);
+}
+
 int main()
 {
     gl::init("Particules!");
@@ -287,20 +297,22 @@ int main()
     // for (size_t i = 0; i < points.size(); ++i)
     //     particles[i].position = points[i];
     
+    glm::vec2 p0 = {-.3f, -.3f};
+    glm::vec2 p1 = {-0.2f, 0.5f};
+    glm::vec2 p2 = {0.7f, -0.8f};
+    glm::vec2 p3 = {.8f, .5f};
+
     std::vector<Particle> particles{};
     int particleAmount = 50;
     for (int i = 0; i < particleAmount; i++)
     {
         float t = (float)1/(float)particleAmount * (float)i;
-        glm::vec2 position = bezier3(
-            {-.3f, -.3f},
-            {-0.2f, 0.5f},
-            {0.7f, -0.8f},
-            {.8f, .5f},
-            t
-        );
+        glm::vec2 position = bezier3(p0, p1, p2, p3, t);
 
-        Particle particle = Particle(position);
+        glm::vec2 tangent = bezier3_derivative(p0, p1, p2, p3, t);
+        glm::vec2 normal = glm::normalize(glm::vec2(-tangent.y, tangent.x));
+
+        Particle particle = Particle(position, normal);
         particles.push_back(particle);
     }
 
@@ -309,8 +321,8 @@ int main()
         glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // for (auto& particle : particles)
-        // {
+        for (auto& particle : particles)
+        {
         //     particle.age += gl::delta_time_in_seconds();
 
         //     auto forces = glm::vec2{0.f};
@@ -325,8 +337,8 @@ int main()
             // forces += (gl::mouse_position() - particle.position);
 
         //     particle.velocity += forces * gl::delta_time_in_seconds();
-        //     particle.position += particle.velocity * gl::delta_time_in_seconds();
-        // }
+            particle.position += particle.velocity * gl::delta_time_in_seconds();
+        }
 
 
         draw_parametric([](float t) {
