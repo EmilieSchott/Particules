@@ -250,9 +250,8 @@ void draw_parametric(std::function<glm::vec2(float)> const& parametric)
     int steps = 100;
     glm::vec2 start = parametric(0.f);
 
-                glm::vec4 violet = {1.f, 0.f, 1.f, 1.f}; // RGB(255, 0, 255)
-            utils::draw_disk(start, 0.01f, violet); // point de départ
-
+    glm::vec4 violet = {1.f, 0.f, 1.f, 1.f}; // RGB(255, 0, 255)
+    utils::draw_disk(start, 0.01f, violet); // point de départ
 
     for (int i = 1; i <= steps; ++i)
     {
@@ -265,9 +264,13 @@ void draw_parametric(std::function<glm::vec2(float)> const& parametric)
     }
 }
 
-glm::vec2 bezier1(glm::vec2 p0, glm::vec2 p1, float t)
+glm::vec2 bezier2(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, float t)
 {
-    return glm::mix(p0, p1, t);
+    glm::vec2 a = glm::mix(p0, p1, t);
+    glm::vec2 b = glm::mix(p1, p2, t);
+
+    glm::vec2 point = glm::mix(a, b, t);
+    return point;
 }
 
 int main()
@@ -314,8 +317,11 @@ int main()
 
         draw_parametric([](float t) {
             glm::vec2 p0 = {-.3f, -.3f};
-            glm::vec2 p1 = {0.3f, 0.3f};
-            return bezier1(p0, p1, t);
+            glm::vec2 p2 = {0.3f, 0.3f};
+            return bezier2(p0, gl::mouse_position(), p2, t);
         });
+
+        glm::vec4 violet = {1.f, 0.f, 1.f, 1.f}; // RGB(255, 0, 255)
+        utils::draw_disk(gl::mouse_position(), 0.01f, violet); // point où se trouve la souris
     }
 }
