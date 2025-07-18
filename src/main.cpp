@@ -302,10 +302,14 @@ int main()
         //     utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
 
         draw_parametric([](float t) {
-            glm::vec2 center = {0.0f, 0.0f}; // centre du cercle
-            float radius = 0.5f;             // rayon du cercle
-            float angle = 2.0f * glm::pi<float>() * t;
-            return center + radius * glm::vec2{cos(angle), sin(angle)};
+            float angle = t * glm::pi<float>() * 2.f; 
+            float x = 16.f * std::pow(std::sin(angle), 3.f);
+            float y = 13.f * std::cos(angle)
+                - 5.f * std::cos(2.f * angle)
+                - 2.f * std::cos(3.f * angle)
+                - std::cos(4.f * angle);
+            
+            return 0.05f * glm::vec2{x, y}; // 0.05f mise à l’échelle pour rester dans [-1,1]
         });
     }
 }
