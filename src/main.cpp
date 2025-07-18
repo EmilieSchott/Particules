@@ -264,12 +264,13 @@ void draw_parametric(std::function<glm::vec2(float)> const& parametric)
     }
 }
 
-glm::vec2 bezier2(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, float t)
+glm::vec2 bezier3(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, float t)
 {
     float u = 1.f - t;
-    return u * u * p0
-         + 2.f * u * t * p1
-         + t * t * p2;
+    return u*u*u * p0
+        + 3.f * u*u * t * p1
+        + 3.f * u * t*t * p2
+        + t*t*t * p3;
 }
 
 int main()
@@ -315,14 +316,12 @@ int main()
         //     utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
 
         draw_parametric([](float t) {
-            glm::vec2 p0 = {-.3f, -.3f};
-            glm::vec2 p2 = {0.3f, 0.3f};
-            return bezier2(p0, gl::mouse_position(), p2, t);
+            return bezier3({-.3f, -.3f}, {-0.2f, 0.5f}, gl::mouse_position(), {.8f, .5f}, t);
         });
 
         glm::vec4 violet = {1.f, 0.f, 1.f, 1.f}; // RGB(255, 0, 255)
         utils::draw_disk(gl::mouse_position(), 0.01f, violet); // point où se trouve la souris
-        // utils::draw_disk({-0.2f, 0.5f}, 0.01f, violet); // 1er point de contrôle de la courbe de bézier
+        utils::draw_disk({-0.2f, 0.5f}, 0.01f, violet); // 1er point de contrôle de la courbe de bézier
         
     }
 }
