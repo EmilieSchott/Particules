@@ -284,6 +284,44 @@ glm::vec2 bezier3_derivative(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2
         3.f * t*t * (p3 - p2);
 }
 
+float find_closest_t_on_bezier(glm::vec2 mouse, glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 p3)
+{
+    float best_t = 0.f;
+    float min_distance = std::numeric_limits<float>::max();
+
+    // On teste plusieurs t initiaux pour éviter les minima locaux
+    for (int i = 0; i <= 10; ++i)
+    {
+        float t = static_cast<float>(i) / 10.f;
+        float learning_rate = 0.01f;
+
+        // Descente de gradient
+        for (int i = 0; i < 20; ++i)
+        {
+            glm::vec2 Bezier = bezier3(p0, p1, p2, p3, t);
+            glm::vec2 derivativeBezier = bezier3_derivative(p0, p1, p2, p3, t);
+
+            glm::vec2 distance = Bezier - mouse;
+
+            float gradient = 2.f * glm::dot(distance, derivativeBezier);
+
+            t -= learning_rate * gradient;
+            t = glm::clamp(t, 0.f, 1.f); // rester entre 0 et 1
+        }
+
+        glm::vec2 final_point = bezier3(p0, p1, p2, p3, t);
+        float distance = glm::distance(final_point, mouse);
+
+        if (distance < min_distance)
+        {
+            min_distance = distance;
+            best_t = t;
+        }
+    }
+
+    return best_t;
+}
+
 int main()
 {
     gl::init("Particules!");
@@ -347,9 +385,17 @@ int main()
 
         
         // draw particles :
-        for (auto const& particle : particles) {
-            utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
-        }
+        // for (auto const& particle : particles) {
+        //     utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
+        // }
         // std::erase_if(particles, [&](Particle const& particle) { return particle.age > particle.lifespan; });
+
+        glm::vec2 mouse = gl::mouse_position();
+
+        float t_closest = find_closest_t_on_bezier(mouse, p0, p1, p2, p3);
+        glm::vec2 closest_point = bezier3(p0, p1, p2, p3, t_closest);
+
+        // dessine le point le plus proche en bleu :
+        utils::draw_disk(closest_point, 0.02f, glm::vec4{0.f, 0.f, 1.f, 1.f});
     }
 }
