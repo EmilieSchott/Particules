@@ -244,6 +244,21 @@ struct Particle {
     }
 };
 
+/* Ceci est une fonction qui retourne un vec2 et prend en paramètre un float */
+void draw_parametric(std::function<glm::vec2(float)> const& parametric)
+{
+    int steps = 100;
+    glm::vec2 start = parametric(0.f);
+    
+    for (int i = 1; i <= steps; ++i)
+    {
+        float t = static_cast<float>(i) / steps;
+        glm::vec2 end = parametric(t);
+        utils::draw_line(start, end, 0.01f, glm::vec4{1.f, 1.f, 1.f, 1.f});
+        start = end;
+    }
+}
+
 int main()
 {
     gl::init("Particules!");
@@ -253,20 +268,20 @@ int main()
 
     auto const points = poisson_disk_sampling({-1.f, -1.f}, {1.f, 1.f}, 0.1f, 20);
 
-    std::vector<Particle> particles(points.size());
-    for (size_t i = 0; i < points.size(); ++i)
-        particles[i].position = points[i];
+    // std::vector<Particle> particles(points.size());
+    // for (size_t i = 0; i < points.size(); ++i)
+    //     particles[i].position = points[i];
 
     while (gl::window_is_open())
     {
         glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for (auto& particle : particles)
-        {
-            particle.age += gl::delta_time_in_seconds();
+        // for (auto& particle : particles)
+        // {
+        //     particle.age += gl::delta_time_in_seconds();
 
-            auto forces = glm::vec2{0.f};
+        //     auto forces = glm::vec2{0.f};
 
             // Gravity
             // forces += glm::vec2{0.f, -1.f} * particle.mass;
@@ -277,13 +292,20 @@ int main()
             // Follow mouse
             // forces += (gl::mouse_position() - particle.position);
 
-            particle.velocity += forces * gl::delta_time_in_seconds();
-            particle.position += particle.velocity * gl::delta_time_in_seconds();
-        }
+        //     particle.velocity += forces * gl::delta_time_in_seconds();
+        //     particle.position += particle.velocity * gl::delta_time_in_seconds();
+        // }
 
         // std::erase_if(particles, [&](Particle const& particle) { return particle.age > particle.lifespan; });
 
-        for (auto const& particle : particles)
-            utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
+        // for (auto const& particle : particles)
+        //     utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
+
+        draw_parametric([](float t) {
+            glm::vec2 center = {0.0f, 0.0f}; // centre du cercle
+            float radius = 0.5f;             // rayon du cercle
+            float angle = 2.0f * glm::pi<float>() * t;
+            return center + radius * glm::vec2{cos(angle), sin(angle)};
+        });
     }
 }
