@@ -199,12 +199,14 @@ struct Particle {
 
     glm::vec3 color() const
     {
-        return glm::vec3{1.f}; // glm::mix(start_color, end_color, easeInOut(relative_age(), 4.f));
+        // return glm::mix(start_color, end_color, easeInOut(relative_age(), 4.f));
+        // return glm::vec3{1.f}; 
+        return glm::vec3{1.f, 0.f, 0.f}; // rouge
     }
 
     float radius() const
     {
-        return 0.1f / 2.f; // std::min(lifespan - age, 2.f) / 2.f * 0.03f;
+        return 0.03f / 2.f; // std::min(lifespan - age, 2.f) / 2.f * 0.03f;
     }
 
     float relative_age() const
@@ -212,7 +214,7 @@ struct Particle {
         return age / lifespan;
     }
 
-    Particle()
+    Particle(glm::vec2 bezierPosition)
     {
         // Rectangle
         // position.x = utils::rand(0.3, 0.8);
@@ -233,14 +235,17 @@ struct Particle {
         // position          = radius * glm::vec2{cos(angle), sin(angle)};
 
         // Disque rejection sampling
-        while (true)
-        {
-            float const R = 0.8f;
-            position.x    = utils::rand(-R, R);
-            position.y    = utils::rand(-R, R);
-            if (glm::length(position) < R)
-                break;
-        }
+        // while (true)
+        // {
+        //     float const R = 0.8f;
+        //     position.x    = utils::rand(-R, R);
+        //     position.y    = utils::rand(-R, R);
+        //     if (glm::length(position) < R)
+        //         break;
+        // }
+
+        // Bézier :
+        position = bezierPosition;
     }
 };
 
@@ -250,17 +255,13 @@ void draw_parametric(std::function<glm::vec2(float)> const& parametric)
     int steps = 100;
     glm::vec2 start = parametric(0.f);
 
-    glm::vec4 violet = {1.f, 0.f, 1.f, 1.f}; // RGB(255, 0, 255)
-    utils::draw_disk(start, 0.01f, violet); // point de départ
 
     for (int i = 1; i <= steps; ++i)
-    {
+    { 
         float t = static_cast<float>(i) / steps;
         glm::vec2 end = parametric(t);
         utils::draw_line(start, end, 0.01f, glm::vec4{1.f, 1.f, 1.f, 1.f});
         start = end;
-
-        if(i == steps) utils::draw_disk(end, 0.01f, violet); // point de d'arrivée
     }
 }
 
@@ -280,11 +281,27 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    auto const points = poisson_disk_sampling({-1.f, -1.f}, {1.f, 1.f}, 0.1f, 20);
+    // auto const points = poisson_disk_sampling({-1.f, -1.f}, {1.f, 1.f}, 0.1f, 20);
 
     // std::vector<Particle> particles(points.size());
     // for (size_t i = 0; i < points.size(); ++i)
     //     particles[i].position = points[i];
+    
+    std::vector<Particle> particles{};
+    for (int i = 0; i < 50; i++)
+    {
+        float t = utils::rand(0.f, 1.f);
+        glm::vec2 position = bezier3(
+            {-.3f, -.3f},
+            {-0.2f, 0.5f},
+            {0.7f, -0.8f},
+            {.8f, .5f},
+            t
+        );
+
+        Particle particle = Particle(position);
+        particles.push_back(particle);
+    }
 
     while (gl::window_is_open())
     {
@@ -310,18 +327,16 @@ int main()
         //     particle.position += particle.velocity * gl::delta_time_in_seconds();
         // }
 
-        // std::erase_if(particles, [&](Particle const& particle) { return particle.age > particle.lifespan; });
-
-        // for (auto const& particle : particles)
-        //     utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
 
         draw_parametric([](float t) {
-            return bezier3({-.3f, -.3f}, {-0.2f, 0.5f}, gl::mouse_position(), {.8f, .5f}, t);
+            return bezier3({-.3f, -.3f}, {-0.2f, 0.5f}, {0.7f, -0.8f}, {.8f, .5f}, t);
         });
 
-        glm::vec4 violet = {1.f, 0.f, 1.f, 1.f}; // RGB(255, 0, 255)
-        utils::draw_disk(gl::mouse_position(), 0.01f, violet); // point où se trouve la souris
-        utils::draw_disk({-0.2f, 0.5f}, 0.01f, violet); // 1er point de contrôle de la courbe de bézier
         
+        // draw particles :
+        for (auto const& particle : particles) {
+            utils::draw_disk(particle.position, particle.radius(), glm::vec4{particle.color(), 1.f});
+        }
+        // std::erase_if(particles, [&](Particle const& particle) { return particle.age > particle.lifespan; });
     }
 }
