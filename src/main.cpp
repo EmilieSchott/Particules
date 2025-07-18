@@ -288,9 +288,10 @@ int main()
     //     particles[i].position = points[i];
     
     std::vector<Particle> particles{};
-    for (int i = 0; i < 50; i++)
+    int particleAmount = 50;
+    for (int i = 0; i < particleAmount; i++)
     {
-        float t = utils::rand(0.f, 1.f);
+        float t = (float)1/(float)particleAmount * (float)i;
         glm::vec2 position = bezier3(
             {-.3f, -.3f},
             {-0.2f, 0.5f},
